@@ -54,7 +54,7 @@ getNextPageUrl = css "a[rel=\"nofollow next\"]" >>> getAttrValue "href"
 
 getComments :: Url -> Int -> [Comment] -> IO [Comment]
 getComments _ 0 comments = return (comments)
-getComments url n comments = do
+getComments url maxPages comments = do
   page <- getPage url
   document <- return (parseHtml page)
   pageComments <- runX $ parseComments <<< document
