@@ -1,6 +1,6 @@
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE Arrows, NoMonomorphismRestriction #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# OPTIONS_GHC -XDeriveDataTypeable #-}
 module Reddit where
 
 import Network.Wreq
@@ -13,6 +13,8 @@ import qualified Data.Text.Encoding as TE
 import Text.HandsomeSoup
 import Text.XML.HXT.Core
 import Data.Tree.NTree.TypeDefs
+import Text.JSON.Generic
+import Safe
 
 newtype Url = Url String deriving (Show)
 
@@ -22,7 +24,7 @@ data Comment = Comment {
   title :: String,
   subreddit :: String,
   body :: String
-  } deriving (Show)
+  } deriving (Show, Typeable, Data)
 
 userToUrl :: String -> Url
 userToUrl u =
@@ -67,3 +69,8 @@ getComments url maxPages comments = do
 
 getCommentPages :: Int -> IO [Comment]
 getCommentPages pages = getComments (Url "http://www.reddit.com/user/dons") pages []
+
+foo = do
+  comments <- getCommentPages 100
+  writeFile "comments.json" (encodeJSON comments)
+
