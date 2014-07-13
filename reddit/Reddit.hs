@@ -58,8 +58,12 @@ getComments url n comments = do
   page <- getPage url
   document <- return (parseHtml page)
   pageComments <- runX $ parseComments <<< document
-  href <- liftM head (runX (getNextPageUrl <<< document))
-  getComments (Url href) (n-1) (comments ++ pageComments)
+  hrefMaybe <- liftM headMay (runX (getNextPageUrl <<< document))
+  case hrefMaybe of
+    Just href -> do
+      print href
+      getComments (Url href) (maxPages-1) (comments ++ pageComments)
+    Nothing -> return (comments)
 
 getCommentPages :: Int -> IO [Comment]
 getCommentPages pages = getComments (Url "http://www.reddit.com/user/dons") pages []
