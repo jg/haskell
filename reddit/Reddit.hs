@@ -38,6 +38,7 @@ getPage (Url url) = do
   result <- get url
   return $ T.unpack (TE.decodeUtf8 (BL.toStrict (result ^. responseBody)))
 
+getUserPage :: IO String
 getUserPage = getPage (Url "http://www.reddit.com/user/dons/comments/")
 
 parseComments :: ArrowXml a => a XmlTree Comment
