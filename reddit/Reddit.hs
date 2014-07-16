@@ -1,6 +1,9 @@
 {-# LANGUAGE Arrows, NoMonomorphismRestriction #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -XDeriveDataTypeable #-}
+
+-- | A Reddit comment aggregator
 module Reddit where
 
 import Network.Wreq
@@ -9,12 +12,14 @@ import Control.Monad
 import qualified Data.Text as T
 import Data.Text (Text)
 import qualified Data.ByteString.Lazy as BL
+import qualified Data.ByteString as B
 import qualified Data.Text.Encoding as TE
 import Text.HandsomeSoup
 import Text.XML.HXT.Core
 import Data.Tree.NTree.TypeDefs
 import Text.JSON.Generic
 import Safe
+import Database.PostgreSQL.Simple
 import Data.Hash.MD5
 
 newtype Url = Url String deriving (Show)
@@ -78,3 +83,12 @@ foo = do
   comments <- getCommentPages 100
   writeFile "comments.json" (encodeJSON comments)
 
+connectionUrl :: B.ByteString
+connectionUrl = "host=localhost port=5432 dbname=reddit"
+persistComment :: Comment -> IO ()
+persistComment c@(Comment title subreddit body) = do
+  conn <- connectPostgreSQL connectionUrl
+  execute conn "INSERT INTO comments(title,subreddit,body,hash) VALUES (?, ?, ?, ?)"
+    (title, subreddit, body, show (commentHash c))
+  close conn
+  return ()
