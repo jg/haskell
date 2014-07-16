@@ -15,10 +15,13 @@ import Text.XML.HXT.Core
 import Data.Tree.NTree.TypeDefs
 import Text.JSON.Generic
 import Safe
+import Data.Hash.MD5
 
 newtype Url = Url String deriving (Show)
 
 newtype User = User Text
+
+newtype Hash = Hash String deriving (Show)
 
 data Comment = Comment {
   title :: String,
@@ -68,6 +71,9 @@ getComments url maxPages comments = do
 getCommentPages :: Int -> IO [Comment]
 getCommentPages pages = getComments (Url "http://www.reddit.com/user/dons") pages []
 
+commentHash :: Comment -> Hash
+commentHash (Comment title subreddit body) =
+  Hash $ md5s (Str (title ++ subreddit ++ body))
 foo = do
   comments <- getCommentPages 100
   writeFile "comments.json" (encodeJSON comments)
