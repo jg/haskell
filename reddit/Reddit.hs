@@ -33,9 +33,6 @@ userToUrl u =
 showUrl :: Url -> IO ()
 showUrl (Url url) = putStrLn url
 
-parseComment :: String -> Comment
-parseComment = undefined
-
 getPage :: Url -> IO (String)
 getPage (Url url) = do
   result <- get url
