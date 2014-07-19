@@ -77,7 +77,7 @@ parseComments = css ".comment" >>>
                          title_ <-         css ".title" //> getText -< x
                          subreddit_ <- css ".subreddit" //> getText -< x
                          body_ <-             css ".md" //> getText -< x
-                         returnA -< Comment title_ subreddit_ body_
+                         returnA -< newComment title_ subreddit_ body_
 
 getNextPageUrl :: ArrowXml a => a XmlTree String
 getNextPageUrl = css "a[rel~=next]" >>> getAttrValue "href"
