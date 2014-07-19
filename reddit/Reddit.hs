@@ -27,6 +27,7 @@ import Data.Hash.MD5
 import Data.Maybe
 import Control.Applicative
 import Data.Time.Clock
+import Control.Exception.Base
 
 newtype Url = Url String deriving (Show)
 
@@ -106,34 +107,29 @@ commentHash (Comment _ title subreddit body _ _ _) =
 
 foo :: IO ()
 foo = do
-  conn <- connectPostgreSQL connectionUrl
+  withConnection (\conn -> do
   comments <- getCommentPages 1
   mapM (persistComment conn) comments
-  close conn
   return ()
+  )
 
 connectionUrl :: B.ByteString
 connectionUrl = "host=localhost port=5432 dbname=reddit password=testtest"
 
 getRandomComment :: IO (Maybe Comment)
 getRandomComment = do
-  conn <- connectPostgreSQL connectionUrl
+  withConnection (\conn -> do
   r <- query_ conn queryText :: IO [Comment]
-  close conn
-  return (headMay r)
+  return (headMay r))
   where
     queryText = "select * from comments order by random() limit 1"
 
-bar = do
-  conn <- connectPostgreSQL connectionUrl
-  commentMay <- getRandomComment
-  close conn
-  isCommentInDb conn (fromJust commentMay)
+withConnection :: (Connection -> IO c) -> IO c
+withConnection f = bracket (connectPostgreSQL connectionUrl) (close) f
 
 isCommentInDb :: Connection -> Comment -> IO Bool
 isCommentInDb conn c = do
   r <- query conn "select id from comments where hash = ?" (hash c) :: IO [(Only Int)]
-  print (fromOnly (hash c))
   return $ (isJust . headMay) r
   where
     hash :: Comment -> Only String
