@@ -11,8 +11,10 @@ import Control.Applicative
 import Control.Exception.Base
 import qualified Data.ByteString as B
 import Safe
+import Control.Monad.Reader
 
 import Reddit.Comment
+import Reddit.Config
 
 newtype Hash = Hash String
 
@@ -28,10 +30,10 @@ commentHash :: Comment -> Hash
 commentHash (Comment _ title subreddit body _ _ _) =
   Hash $ md5s (Str (title ++ subreddit ++ body))
 
-connectionUrl :: B.ByteString
-connectionUrl = "host=localhost port=5432 dbname=reddit password=testtest"
+-- connectionUrl :: B.ByteString
+-- connectionUrl = "host=localhost port=5432 dbname=reddit password=testtest"
 
-getRandomComment :: IO (Maybe Comment)
+
 getRandomComment = do
   withConnection (\conn -> do
   r <- query_ conn queryText :: IO [Comment]
@@ -39,8 +41,10 @@ getRandomComment = do
   where
     queryText = "select * from comments order by random() limit 1"
 
-withConnection :: (Connection -> IO c) -> IO c
-withConnection f = bracket (connectPostgreSQL connectionUrl) (close) f
+
+withConnection f = do
+  url <- connectionUrl
+  return $ bracket (connectPostgreSQL url) (close) f
 
 isCommentInDb :: Connection -> Comment -> IO Bool
 isCommentInDb conn c = do
@@ -51,7 +55,13 @@ isCommentInDb conn c = do
     hash = Only . show . commentHash
 
 persistComment :: Connection -> Comment -> IO ()
-persistComment conn c@(Comment _ title subreddit body _ _ _) = do
+persistComment conn comment = do
+  isInDb <- isCommentInDb conn comment
+  if isInDb then return () else persistComment' conn comment
+
+-- assumes comment isn't present in the database
+persistComment' :: Connection -> Comment -> IO ()
+persistComment' conn c@(Comment _ title subreddit body _ _ _) = do
   execute conn "INSERT INTO comments(title,subreddit,body,hash) VALUES (?, ?, ?, ?)"
     (title, subreddit, body, show (commentHash c))
   return ()

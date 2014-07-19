@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -XDeriveDataTypeable #-}
 module Reddit.Comment where
 
-import Data.Time.Clock
+import Data.Time (UTCTime, getCurrentTime)
 import Text.JSON.Generic
 import Data.Maybe
 
