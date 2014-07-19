@@ -95,7 +95,6 @@ getComments url maxPages comments = do
       print href
       getComments (Url href) (maxPages-1) (comments ++ pageComments)
     Nothing -> do
-      print "nothing!"
       return (comments)
 
 getCommentPages :: Int -> IO [Comment]
