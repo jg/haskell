@@ -25,14 +25,9 @@ instance FromRow Comment where
   fromRow = Comment <$>
             field <*> field <*> field <*> field <*> field <*> field <*> field
 
-
 commentHash :: Comment -> Hash
 commentHash (Comment _ title subreddit body _ _ _) =
   Hash $ md5s (Str (title ++ subreddit ++ body))
-
--- connectionUrl :: B.ByteString
--- connectionUrl = "host=localhost port=5432 dbname=reddit password=testtest"
-
 
 getRandomComment = do
   withConnection (\conn -> do
@@ -40,7 +35,6 @@ getRandomComment = do
   return (headMay r))
   where
     queryText = "select * from comments order by random() limit 1"
-
 
 withConnection f = do
   url <- connectionUrl
