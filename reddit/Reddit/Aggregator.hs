@@ -1,7 +1,4 @@
 {-# LANGUAGE Arrows, NoMonomorphismRestriction #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# OPTIONS_GHC -XDeriveDataTypeable #-}
 module Reddit.Aggregator where
 
 import Network.Wreq
@@ -24,8 +21,7 @@ newtype Url = Url String deriving (Show)
 newtype User = User Text
 
 userToUrl :: String -> Url
-userToUrl u =
-  Url $ "http://www.reddit.com/user/" ++ show u ++ "/comments/"
+userToUrl u = Url $ "http://www.reddit.com/user/" ++ show u ++ "/comments/"
 
 showUrl :: Url -> IO ()
 showUrl (Url url) = putStrLn url
@@ -58,7 +54,6 @@ getComments url maxPages comments = do
   hrefMaybe <- liftM headMay (runX (getNextPageUrl <<< document))
   case hrefMaybe of
     Just href -> do
-      print href
       getComments (Url href) (maxPages-1) (comments ++ pageComments)
     Nothing -> do
       return (comments)
