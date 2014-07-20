@@ -8,10 +8,10 @@ import Reddit.Config
 import Control.Monad.Reader
 
 saveComments = do
-  Right config <- liftIO readConfig
+  config <- liftIO readConfig
   runReaderT (withConnection saveComments') config
   where
     saveComments' conn = do
-      comments <- getCommentPages 10
+      comments <- getCommentPages 100
       mapM (persistComment conn) comments
       return ()

@@ -31,4 +31,5 @@ connectionUrl = do
       zipWith (\a b -> a ++ "=" ++ b) names (values config)
 
 lookupVar :: Config -> String -> String
-lookupVar config name = fromJust (Map.lookup name config)
+lookupVar config name = fromJust (Map.lookup name (f config))
+                        where f (Config c) = c
