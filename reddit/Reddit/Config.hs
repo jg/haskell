@@ -65,7 +65,7 @@ readConfigFile name =
 lookupVar :: Config -> String -> String
 lookupVar config name = fromJust (Map.lookup name config)
 
-connectionUrl :: Reader Config B.ByteString
+connectionUrl :: ReaderT Config IO B.ByteString
 connectionUrl = do
   config <- ask
   return $ BC.pack (url config)

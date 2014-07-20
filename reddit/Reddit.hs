@@ -7,11 +7,11 @@ import Reddit.Persist
 import Reddit.Config
 import Control.Monad.Reader
 
-saveComments :: IO ()
 saveComments = do
-  Right config <- readConfig
-  runReader (withConnection f) config
-  where f conn = do
-            comments <- getCommentPages 10
-            mapM (persistComment conn) comments
-            return ()
+  Right config <- liftIO readConfig
+  runReaderT (withConnection saveComments') config
+  where
+    saveComments' conn = do
+      comments <- getCommentPages 10
+      mapM (persistComment conn) comments
+      return ()

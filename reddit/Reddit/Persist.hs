@@ -36,9 +36,10 @@ getRandomComment = do
   where
     queryText = "select * from comments order by random() limit 1"
 
+withConnection :: (Connection -> IO c) -> ReaderT Config IO c
 withConnection f = do
   url <- connectionUrl
-  return $ bracket (connectPostgreSQL url) (close) f
+  liftIO $ bracket (connectPostgreSQL url) (close) f
 
 isCommentInDb :: Connection -> Comment -> IO Bool
 isCommentInDb conn c = do
